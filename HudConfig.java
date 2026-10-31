@@ -1,0 +1,68 @@
+package com.example.hudmod;
+
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import net.fabricmc.loader.api.FabricLoader;
+
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+
+public final class HudConfig {
+
+    public static final int MIN_LEVEL = 1;
+    public static final int MAX_LEVEL = 10;
+
+    private static final Path PATH = FabricLoader.getInstance().getConfigDir().resolve("hudmod.json");
+    private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
+    private static HudConfig instance;
+
+    public int level = 5;
+
+    public static HudConfig get() {
+        if (instance == null) {
+            load();
+        }
+        return instance;
+    }
+
+    /** Level 1 = 0.5x, level 10 = 1.4x. */
+    public float scale() {
+        return 0.5f + (level - MIN_LEVEL) * 0.1f;
+    }
+
+    public static void load() {
+        HudConfig loaded = null;
+        if (Files.exists(PATH)) {
+            try (Reader reader = Files.newBufferedReader(PATH)) {
+                loaded = GSON.fromJson(reader, HudConfig.class);
+            } catch (Exception e) {
+                System.err.println("[hudmod] Could not read " + PATH + ", using defaults: " + e);
+            }
+        }
+        instance = loaded != null ? loaded : new HudConfig();
+        instance.level = clamp(instance.level);
+    }
+
+    public static void adjust(int delta) {
+        HudConfig cfg = get();
+        cfg.level = clamp(cfg.level + delta);
+        save();
+    }
+
+    public static void save() {
+        try {
+            Files.createDirectories(PATH.getParent());
+            try (Writer writer = Files.newBufferedWriter(PATH)) {
+                GSON.toJson(get(), writer);
+            }
+        } catch (Exception e) {
+            System.err.println("[hudmod] Could not save config: " + e);
+        }
+    }
+
+    private static int clamp(int value) {
+        return Math.max(MIN_LEVEL, Math.min(MAX_LEVEL, value));
+    }
+}

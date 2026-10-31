@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "id": "hudmod",
+  "version": "1.0.0",
+  "name": "HUD Mod",
+  "description": "FPS and ping overlay with a 1-10 size setting.",
+  "environment": "client",
+  "entrypoints": {
+    "client": ["com.example.hudmod.HudMod"]
+  },
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "1.21.11",
+    "java": ">=21",
+    "fabric-api": "*"
+  }
+}
